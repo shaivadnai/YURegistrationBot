@@ -1,12 +1,13 @@
 /**
  * Copyright (c) 2020
  *
- * Registration Bot for students in Yeshiva University's MY Program
+ * Registration Bot for students in Yeshiva University's MYP Program
  * 
  * Uses Puppeteer, Readline and OS to determine
  * correct Chrome Path and run registration script.
  * 
- * Google Chrome is a dependency (can be packaged for standalone use)
+ * Current version runs with just puppteer, but executables can be
+ * generated using local Google Chrome installation as a dependency.
  * 
  * This has been tested to remain functional if run
  * one hour prior to use time and will execute registration
@@ -20,9 +21,11 @@
  * 
  * @summary AutoRegistration Bot for Yeshiva University
  * @author Charles Vadnai <cvadnai@mail.yu.edu>
+ * 
+ * Bi-Annual Updates required for Semester Changes (which are upredicatable)
  *
  * Created at     : 2020-12-13 
- * Last modified  : 2020-12-22
+ * Last modified  : 2021-5-2
  */
 
 //dependencies
@@ -35,7 +38,7 @@ const { exit } = require('process');
 //constants and variables
 
 //set by developer for specific user
-const date = "12/20/2020 13:56:00";
+const date = "05/6/2021 16:00:00";
 
 //convert registration date to machine readable
 const epoch = setDate(date);
@@ -61,7 +64,8 @@ var chromiumExecutablePath = null;
 const pause = () => new Promise(res => setTimeout(res, 1000));
 const pause2 = () => new Promise(res => setTimeout(res, 250));
 
-//set chrome path by os
+//set chrome path by os - for packaged version
+/*
 switch (os.type()) {
     case "Windows_NT":
         chromiumExecutablePath = "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"
@@ -76,6 +80,7 @@ switch (os.type()) {
         console.log(chromiumExecutablePath);
         exit(1);
 }
+*/
 
 //helper functions
 
@@ -159,8 +164,8 @@ async function getData(prompt) {
 
     //open browser and new page
     const browser = await puppeteer.launch({
-        headless: false,//false
-        executablePath: chromiumExecutablePath
+        headless: false,//gives user sense of control and security
+        //executablePath: chromiumExecutablePath //For Packaged Version
     })
     const page = await browser.newPage();
 
@@ -192,8 +197,11 @@ async function getData(prompt) {
     await page.waitForNavigation();
     await clickByText(page, "Add or Drop Classes");
 
-    
+    //Term no longer defaults correctly, this fixes that - must be updated before each use
     await page.waitForNavigation();
+    await page.evaluate(() => {
+        document.getElementById("term_id").selectedIndex = 1;
+    })
 
     //display preset registration time to user
     myDate = new Date(epoch);
